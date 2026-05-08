@@ -1,0 +1,8 @@
+name,age,cgpa,label
+Alice,20,3.5,1
+Bob,21,,0
+Charlie,,3.9,1
+David,21,4.0,0
+Eve,22,3.8,1
+,23,3.6,0
+Frank,20,,1

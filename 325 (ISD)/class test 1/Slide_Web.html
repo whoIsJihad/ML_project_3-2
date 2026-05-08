@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Requirement Analysis Explorer (Offline)</title>
+    <style>
+        /* BASE STYLES & OFFLINE CSS FRAMEWORK SIMULATION */
+        :root {
+            --color-primary: #4b5563; /* Stone-600 (Dark Neutral/Action) */
+            --color-secondary: #f5f5f4; /* Stone-100 (Sidebar/Subtle BG) */
+            --color-background: #fafaf9; /* Stone-50 (Main BG) */
+            --color-text: #1c1917; /* Stone-900 (Main Text) */
+            --color-accent: #78716c; /* Stone-500 (Border/Emphasis) */
+            --color-green: #10b981; /* Success */
+            --color-red: #ef4444; /* Warning/Risk */
+            --color-light-gray: #f0f0f0;
+        }
+
+        body {
+            font-family: ui-sans-serif, system-ui, sans-serif;
+            margin: 0;
+            line-height: 1.5;
+            background-color: var(--color-background);
+            color: var(--color-text);
+            display: flex;
+            min-height: 100vh;
+            overflow: hidden;
+            font-size: 16px;
+        }
+
+        /* Utility Classes (Minimal subset) */
+        .flex { display: flex; }
+        .flex-col { flex-direction: column; }
+        .flex-1 { flex: 1; }
+        .gap-4 { gap: 1rem; }
+        .p-4 { padding: 1rem; }
+        .p-6 { padding: 1.5rem; }
+        .mt-4 { margin-top: 1rem; }
+        .mb-4 { margin-bottom: 1rem; }
+        .shadow-md { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06); }
+        .rounded-lg { border-radius: 0.5rem; }
+        .text-xl { font-size: 1.25rem; }
+        .text-lg { font-size: 1.125rem; }
+        .text-sm { font-size: 0.875rem; }
+        .font-bold { font-weight: 700; }
+        .font-semibold { font-weight: 600; }
+        .text-stone-800 { color: #413736; }
+        .text-stone-600 { color: #878378; }
+        .bg-white { background-color: white; }
+        .border { border: 1px solid #e5e7eb; }
+        .border-t-4 { border-top: 4px solid var(--color-primary); }
+        .border-l-4 { border-left: 4px solid var(--color-accent); }
+        
+        /* Grid Layouts */
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+        /* Sidebar & Layout */
+        #sidebar {
+            width: 250px;
+            background-color: var(--color-secondary);
+            border-right: 1px solid #e5e7eb;
+            transition: transform 0.3s ease-in-out;
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+        #main-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 2rem;
+        }
+        .nav-item {
+            display: block;
+            width: 100%;
+            text-align: left;
+            padding: 0.75rem 1.5rem;
+            color: var(--color-text);
+            background: none;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .nav-item:hover { background-color: #e5e7eb; }
+        .nav-item.active {
+            background-color: #e5e7eb;
+            border-left: 4px solid var(--color-primary);
+            font-weight: 600;
+        }
+        
+        /* Custom Visualization (Comparison Table) */
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+        .comparison-table th, .comparison-table td {
+            padding: 0.75rem;
+            border: 1px solid #e5e7eb;
+        }
+        .comparison-table th {
+            background-color: #e5e7eb;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+        }
+        .data-bar-container {
+            padding: 5px 0;
+            background-color: #eee;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .data-bar {
+            height: 10px;
+            border-radius: 4px;
+            transition: width 0.3s ease-out;
+            margin: 0;
+        }
+        .depth { background-color: var(--color-primary); opacity: 0.8; }
+        .resource { background-color: var(--color-accent); opacity: 0.8; }
+        .bias { background-color: var(--color-red); opacity: 0.8; }
+
+        /* Animation */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Responsive (Mobile view) */
+        .mobile-header { display: none; }
+        @media (max-width: 768px) {
+            body { flex-direction: column; }
+            #sidebar {
+                position: fixed;
+                height: 100%;
+                z-index: 20;
+                transform: translateX(-100%);
+                width: 70%;
+            }
+            #sidebar.open {
+                transform: translateX(0);
+            }
+            .mobile-header {
+                display: flex;
+                padding: 1rem;
+                border-bottom: 1px solid #e5e7eb;
+                background-color: var(--color-secondary);
+                z-index: 10;
+            }
+            #main-content { padding: 1rem; }
+            .grid-2 { grid-template-columns: 1fr; }
+            .w-half-minus-gap { width: 100% !important; }
+        }
+        .w-half-minus-gap { width: calc(50% - 0.5rem); }
+    </style>
+    <!-- Chosen Palette: Warm Neutrals & Sage -->
+    <!-- Application Structure Plan: 
+         Dashboard Layout with persistent sidebar navigation.
+         Sections: Overview, Observation, Interviews, CI, Focus/Surveys, Comparison (re-imagined as table), Activity.
+         Justification: Provides structured, navigable chunks of information for learning.
+    -->
+
+    <!-- Visualization & Content Choices:
+         1. Overview: HTML Grid cards. Goal: Organize.
+         2. Comparison: HTML/CSS Comparison Table with data bars. Goal: Compare trade-offs (Depth, Resources, Bias). Replaces Chart.js Radar Chart.
+         3. Interviews/CI: Pure HTML/CSS lists and grid layouts. Goal: Inform/Organize.
+         
+         CONFIRMATION: NO SVG graphics used. NO external libraries used. Fully self-contained.
+    -->
+</head>
+<body onload="navigateTo('overview')">
+
+    <!-- Mobile Header -->
+    <header class="mobile-header">
+        <h1 class="text-lg font-bold text-stone-800 flex-1">Req. Analysis Tool (Offline)</h1>
+        <button id="mobile-menu-btn" onclick="toggleMenu()" class="text-stone-600 focus:outline-none ml-4">
+            <span class="text-2xl">☰</span>
+        </button>
+    </header>
+
+    <!-- Sidebar Navigation -->
+    <aside id="sidebar">
+        <div class="p-6 border-b border-stone-200 hidden md:block">
+            <h1 class="text-xl font-bold text-stone-800">Requirement Analysis</h1>
+            <p class="text-sm text-stone-600 mt-1 uppercase">Information System Design</p>
+        </div>
+        <nav class="flex-1 overflow-y-auto py-4">
+            <ul class="space-y-1">
+                <li><button onclick="navigateTo('overview')" class="nav-item">Overview of Methods</button></li>
+                <li><button onclick="navigateTo('observation')" class="nav-item">Observation</button></li>
+                <li><button onclick="navigateTo('interviews')" class="nav-item">Interviews</button></li>
+                <li><button onclick="navigateTo('ci')" class="nav-item">Contextual Inquiry</button></li>
+                <li><button onclick="navigateTo('focus_surveys')" class="nav-item">Focus Groups & Surveys</button></li>
+                <li><button onclick="navigateTo('comparison')" class="nav-item">Trade-off Analysis (Viz)</button></li>
+                <li><button onclick="navigateTo('activity')" class="nav-item">Activity: Library Space</button></li>
+            </ul>
+        </nav>
+        <div class="p-4 border-t border-stone-200 text-sm text-stone-600">
+            Offline Run
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 overflow-y-auto" id="main-content">
+        <!-- Dynamic Content Injected Here -->
+    </main>
+
+    <script>
+        // --- Data & Content ---
+        const contentData = {
+            overview: {
+                title: "Requirement Gathering Landscape",
+                intro: "Requirement gathering is the cornerstone of Information System Design. Methods generally fall into direct engagement, collaborative, analytical, or secondary categories.",
+                sections: [
+                    { title: "Direct User Engagement", items: ["Observation", "Interviews", "Focus Groups", "Contextual Inquiries", "Surveys"], icon: "👥" },
+                    { title: "Collaborative & Participatory", items: ["Participatory Design", "JAD/JDP"], icon: "🤝" },
+                    { title: "Analytical & Modelling", items: ["Task Analysis", "BPMN", "Journey Mapping"], icon: "📊" },
+                    { title: "Secondary Methods", items: ["Document Analysis", "Market Analysis", "Competitive Analysis"], icon: "📚" }
+                ]
+            },
+            observation: {
+                title: "Observation Methods",
+                intro: "Observation involves watching stakeholders to identify pain points. Divided into Participant and Non-Participant.",
+                types: [
+                    {
+                        name: "Participant Observation",
+                        desc: "Researcher actively enters and participates.",
+                        pros: ["Hands-on experience", "Deep insight"],
+                        cons: ["Bias risk (empathy)", "Ethical concerns", "Time-consuming"]
+                    },
+                    {
+                        name: "Non-Participant Observation",
+                        desc: "Researcher observes from a distance.",
+                        pros: ["Open-minded/Objective", "Observe body language"],
+                        cons: ["Inaccurate data risk", "Hawthorne Effect"]
+                    }
+                ],
+                hawthorne: {
+                    title: "Hawthorne Effect",
+                    desc: "Individuals modify behavior when observed.",
+                    remedy: ["Build rapport", "Normalize observation", "Use multiple methods"]
+                }
+            },
+            interviews: {
+                title: "Interview Techniques",
+                intro: "Primary method for gathering qualitative data. Success relies on structure and execution.",
+                types: [
+                    { type: "Unstructured", knowledge: "Little", guide: "No guide, 'off the cuff'", role: "Apprentice/Learner" },
+                    { type: "Semi-Structured", knowledge: "Some", guide: "Themes/Questions, probing allowed", role: "Probe & Guide" },
+                    { type: "Structured", knowledge: "Lots", guide: "Strict list, no deviations", role: "Scripted" }
+                ],
+                tips: {
+                    dos: ["Aim for comfort", "Show empathy", "Use prompts (Silent, Echo)"],
+                    donts: ["Leading questions", "Closed (Yes/No)", "Compound questions", "Suggesting answers"]
+                }
+            },
+            ci: {
+                title: "Contextual Inquiry (CI)",
+                intro: "Applied Design Ethnography. Go where the customer works, observe, and talk about the work simultaneously.",
+                principles: [
+                    { name: "Context", desc: "Must be 'where the work happens'." },
+                    { name: "Partnership", desc: "Master/Apprentice model (You are the apprentice)." },
+                    { name: "Interpretation", desc: "Validate data interpretations with the participant." },
+                    { name: "Focus", desc: "Enter with focus, but be open to surprises." }
+                ]
+            },
+            focus_surveys: {
+                title: "Focus Groups & Surveys",
+                intro: "Methods for gathering data from groups, either through discussion or structured forms.",
+                focus: {
+                    def: "Facilitated meeting (1-2 hrs) with 6-9 people.",
+                    pros: ["Build on responses", "Clarify vocabulary/mental models", "Time-efficient"],
+                    cons: ["Group dynamics risk"]
+                },
+                surveys: {
+                    def: "Structured questions (Open, Closed, Scalar).",
+                    tips: ["Increase rewards", "Establish trust", "Decrease effort (keep short)"]
+                }
+            },
+            comparison: {
+                title: "Trade-off Analysis (Visualization)",
+                intro: "Comparing methods based on Depth of Insight, Resource Intensity, and Bias Risk. Scale is 1 (Low) to 10 (High).",
+                data: [
+                    { name: "Observation", depth: 7, resource: 8, bias: 8 },
+                    { name: "Interviews", depth: 8, resource: 7, bias: 6 },
+                    { name: "Focus Groups", depth: 6, resource: 5, bias: 9 },
+                    { name: "Contextual Inquiry", depth: 10, resource: 9, bias: 5 },
+                    { name: "Surveys", depth: 4, resource: 3, bias: 4 }
+                ]
+            },
+            activity: {
+                title: "Case Study: Library Redesign",
+                intro: "Apply knowledge: Which methods best uncover student needs for redesigning study spaces?",
+                methods: [
+                    { id: "obs", name: "Contextual Inquiry", reason: "Understands *how* students use space (artifacts, true pain points)." },
+                    { id: "sur", name: "Survey", reason: "Gathers quantitative preference data (e.g., lighting) from a large sample." },
+                    { id: "foc", name: "Focus Group", reason: "Defines shared mental models (e.g., what 'cozy' means) through discussion." }
+                ]
+            }
+        };
+
+        // --- State Management ---
+        let currentSection = 'overview';
+
+        // --- Navigation Logic ---
+        function navigateTo(sectionId) {
+            currentSection = sectionId;
+            updateUI();
+            
+            // Update Sidebar Active State
+            document.querySelectorAll('.nav-item').forEach(el => {
+                el.classList.remove('active');
+            });
+            const activeEl = document.querySelector(`.nav-item[onclick*='${sectionId}']`);
+            if (activeEl) {
+                activeEl.classList.add('active');
+            }
+
+            // Mobile menu close
+            document.getElementById('sidebar').classList.remove('open');
+        }
+        
+        function toggleMenu() {
+            document.getElementById('sidebar').classList.toggle('open');
+        }
+
+        // --- Core Rendering Logic ---
+        function updateUI() {
+            const container = document.getElementById('main-content');
+            container.innerHTML = '';
+            
+            const data = contentData[currentSection];
+            if (!data) return;
+
+            // Render Header
+            container.innerHTML = `
+                <div class="p-4 mb-4 fade-in">
+                    <h2 class="text-3xl font-bold text-stone-800 mb-2">${data.title}</h2>
+                    <p class="text-lg text-stone-600 border-l-4 border-stone-400 pl-4">${data.intro}</p>
+                </div>
+            `;
+            
+            const contentWrapper = document.createElement('div');
+            contentWrapper.className = 'p-4';
+            container.appendChild(contentWrapper);
+
+            // Render Specific Section Content
+            if (currentSection === 'overview') renderOverview(contentWrapper, data);
+            else if (currentSection === 'observation') renderObservation(contentWrapper, data);
+            else if (currentSection === 'interviews') renderInterviews(contentWrapper, data);
+            else if (currentSection === 'ci') renderCI(contentWrapper, data);
+            else if (currentSection === 'focus_surveys') renderFocusSurveys(contentWrapper, data);
+            else if (currentSection === 'comparison') renderComparison(contentWrapper, data);
+            else if (currentSection === 'activity') renderActivity(contentWrapper, data);
+        }
+
+        // --- Renderers (Pure JS/HTML/CSS) ---
+
+        function renderOverview(container, data) {
+            const grid = document.createElement('div');
+            grid.className = "grid-2 gap-4";
+            
+            data.sections.forEach(sec => {
+                const card = document.createElement('div');
+                card.className = "bg-white p-4 rounded-lg shadow-md border";
+                card.innerHTML = `
+                    <div class="flex items-center mb-2" style="display: flex; align-items: center;">
+                        <span style="font-size: 1.5rem; margin-right: 0.5rem;">${sec.icon}</span>
+                        <h3 class="text-xl font-semibold">${sec.title}</h3>
+                    </div>
+                    <ul style="padding-left: 1rem; list-style-type: disc; margin-top: 0.5rem;">
+                        ${sec.items.map(item => `<li class="text-stone-600">${item}</li>`).join('')}
+                    </ul>
+                `;
+                grid.appendChild(card);
+            });
+            container.appendChild(grid);
+        }
+
+        function renderObservation(container, data) {
+            const html = `
+                <div class="grid-2 gap-4 mb-4">
+                    ${data.types.map(type => `
+                        <div class="bg-white p-4 rounded-lg shadow-md border">
+                            <h3 class="text-xl font-bold mb-2">${type.name}</h3>
+                            <p class="text-stone-600 mb-4 italic text-sm">${type.desc}</p>
+                            <div class="flex flex-col gap-4">
+                                <div>
+                                    <span style="color: var(--color-green); font-weight: bold; font-size: 0.75rem;">PROS</span>
+                                    <ul style="padding-left: 1rem; list-style-type: '✓ '; margin-top: 0.25rem;">
+                                        ${type.pros.map(p => `<li class="text-sm">${p}</li>`).join('')}
+                                    </ul>
+                                </div>
+                                <div>
+                                    <span style="color: var(--color-red); font-weight: bold; font-size: 0.75rem;">CONS</span>
+                                    <ul style="padding-left: 1rem; list-style-type: '✕ '; margin-top: 0.25rem;">
+                                        ${type.cons.map(c => `<li class="text-sm">${c}</li>`).join('')}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+                <div class="border-l-4 p-4" style="background-color: #f0f0f0; border-color: var(--color-accent); border-radius: 4px;">
+                    <h3 class="text-xl font-bold mb-2">${data.hawthorne.title}</h3>
+                    <p class="text-stone-600 mb-2">${data.hawthorne.desc}</p>
+                    <p class="text-sm font-semibold" style="margin-top: 1rem;">Avoidance:</p>
+                    <ul style="padding-left: 1rem; list-style-type: disc;">${data.hawthorne.remedy.map(r => `<li>${r}</li>`).join('')}</ul>
+                </div>
+            `;
+            container.innerHTML = html;
+        }
+
+        function renderInterviews(container, data) {
+            const table = `
+                <div class="bg-white rounded-lg shadow-md border overflow-x-auto mb-4">
+                    <table class="comparison-table" style="width: 100%; min-width: 500px;">
+                        <thead>
+                            <tr>
+                                <th>Format</th>
+                                <th>Knowledge Level</th>
+                                <th>Guide / Structure</th>
+                                <th>Role</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${data.types.map(t => `
+                                <tr>
+                                    <td class="font-semibold">${t.type}</td>
+                                    <td>${t.knowledge}</td>
+                                    <td>${t.guide}</td>
+                                    <td>${t.role}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            const tips = `
+                <div class="grid-2 gap-4">
+                    <div class="p-4 rounded-lg border w-half-minus-gap" style="background-color: #e8f5e9; border-color: #a5d6a7;">
+                        <h3 class="font-bold mb-2" style="color: #2e7d32; display: flex; align-items: center;">
+                            <span style="font-size: 1.25rem; margin-right: 0.5rem;">👍</span> Best Practices
+                        </h3>
+                        <ul style="padding-left: 1rem; list-style-type: circle;">
+                            ${data.tips.dos.map(item => `<li class="text-sm">${item}</li>`).join('')}
+                        </ul>
+                    </div>
+                    <div class="p-4 rounded-lg border w-half-minus-gap" style="background-color: #ffebee; border-color: #ef9a9a;">
+                        <h3 class="font-bold mb-2" style="color: #c62828; display: flex; align-items: center;">
+                            <span style="font-size: 1.25rem; margin-right: 0.5rem;">⚠️</span> Mistakes to Avoid
+                        </h3>
+                        <ul style="padding-left: 1rem; list-style-type: circle;">
+                            ${data.tips.donts.map(item => `<li class="text-sm">${item}</li>`).join('')}
+                        </ul>
+                    </div>
+                </div>
+            `;
+            container.innerHTML = table + tips;
+        }
+
+        function renderCI(container, data) {
+             const grid = document.createElement('div');
+            grid.className = "grid-2 gap-4";
+
+            data.principles.forEach((p, index) => {
+                const card = document.createElement('div');
+                card.className = `bg-white p-4 rounded-lg shadow-md border-l-4`;
+                card.style.borderColor = 'var(--color-accent)';
+                card.innerHTML = `
+                    <h3 class="text-xl font-bold mb-1">${p.name}</h3>
+                    <p class="text-stone-600 text-sm">${p.desc}</p>
+                `;
+                grid.appendChild(card);
+            });
+            container.appendChild(grid);
+        }
+
+        function renderFocusSurveys(container, data) {
+            const focusSection = `
+                <div class="bg-white p-4 rounded-lg border shadow-md mb-4">
+                    <h3 class="text-xl font-bold mb-2">Focus Groups</h3>
+                    <p class="text-stone-600 mb-2">${data.focus.def}</p>
+                    <div class="grid-2 gap-4 mt-2">
+                        <div>
+                            <h4 class="font-semibold mb-1" style="color: var(--color-green);">Benefits</h4>
+                            <ul style="padding-left: 1rem; list-style-type: disc;">${data.focus.pros.map(p => `<li class="text-sm">${p}</li>`).join('')}</ul>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold mb-1" style="color: var(--color-red);">Risks</h4>
+                            <ul style="padding-left: 1rem; list-style-type: disc;">${data.focus.cons.map(c => `<li class="text-sm">${c}</li>`).join('')}</ul>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            const surveySection = `
+                <div class="bg-white p-4 rounded-lg border shadow-md">
+                    <h3 class="text-xl font-bold mb-2">Surveys & Questionnaires</h3>
+                    <p class="text-stone-600 mb-3">${data.surveys.def}</p>
+                    <h4 class="font-semibold mb-1">Response Rate Strategies:</h4>
+                    <div class="flex flex-wrap gap-2">
+                        ${data.surveys.tips.map(t => `<span class="text-sm p-1 rounded" style="background-color: #f0f0f0; border: 1px solid #ccc;">${t}</span>`).join('')}
+                    </div>
+                </div>
+            `;
+            container.innerHTML = focusSection + surveySection;
+        }
+
+        function renderComparison(container, data) {
+            const table = document.createElement('table');
+            table.className = 'comparison-table';
+            table.style.marginBottom = '1rem';
+            table.innerHTML = `
+                <thead>
+                    <tr>
+                        <th style="width: 15%;">Method</th>
+                        <th style="width: 15%;">Value</th>
+                        <th style="width: 25%;">Depth of Insight (Richness)</th>
+                        <th style="width: 15%;">Value</th>
+                        <th style="width: 25%;">Resource Intensity (Time/Effort)</th>
+                        <th style="width: 15%;">Value</th>
+                        <th style="width: 25%;">Bias Risk (Subjectivity)</th>
+                    </tr>
+                </thead>
+                <tbody id="comparison-body"></tbody>
+            `;
+            container.appendChild(table);
+
+            const tbody = document.getElementById('comparison-body');
+            data.data.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="font-semibold">${item.name}</td>
+                    <td style="font-size: 0.75rem;">${item.depth}/10</td>
+                    <td><div class="data-bar-container"><div class="data-bar depth" style="width: ${item.depth * 10}%;"></div></div></td>
+                    <td style="font-size: 0.75rem;">${item.resource}/10</td>
+                    <td><div class="data-bar-container"><div class="data-bar resource" style="width: ${item.resource * 10}%;"></div></div></td>
+                    <td style="font-size: 0.75rem;">${item.bias}/10</td>
+                    <td><div class="data-bar-container"><div class="data-bar bias" style="width: ${item.bias * 10}%;"></div></div></td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            const legend = `
+                <div style="font-size: 0.8rem;" class="p-4 bg-white rounded-lg shadow-md border">
+                    <h4 class="font-semibold mb-2">Legend (Scale: 1 = Low, 10 = High)</h4>
+                    <div class="flex gap-4">
+                        <div class="flex items-center"><div class="data-bar depth" style="width: 15px; height: 10px; margin-right: 5px;"></div> Depth of Insight</div>
+                        <div class="flex items-center"><div class="data-bar resource" style="width: 15px; height: 10px; margin-right: 5px;"></div> Resource Intensity</div>
+                        <div class="flex items-center"><div class="data-bar bias" style="width: 15px; height: 10px; margin-right: 5px;"></div> Bias Risk</div>
+                    </div>
+                    <p class="mt-2 text-stone-600 italic">Contextual Inquiry offers the highest depth but requires the most resources. Focus Groups have high bias risk due to group dynamics.</p>
+                </div>
+            `;
+            container.innerHTML += legend;
+        }
+
+        function renderActivity(container, data) {
+            const scenarioCard = document.createElement('div');
+            scenarioCard.className = "bg-white p-4 rounded-lg shadow-md border-t-4";
+            scenarioCard.style.borderColor = 'var(--color-primary)';
+            
+            let optionsHtml = '';
+            data.methods.forEach(m => {
+                optionsHtml += `
+                    <label style="display: flex; align-items: center; margin-bottom: 0.5rem; cursor: pointer;">
+                        <input type="checkbox" name="method" value="${m.id}" style="margin-right: 0.5rem;">
+                        <span class="text-stone-700 font-semibold">${m.name}</span>
+                    </label>
+                `;
+            });
+
+            scenarioCard.innerHTML = `
+                <div class="mb-4">
+                    <h3 class="text-xl font-bold mb-2">Scenario: University Library Redesign</h3>
+                    <p class="text-stone-600">You need to investigate students' behaviors and needs to design better study spaces.</p>
+                </div>
+
+                <div style="background-color: #f0f0f0;" class="p-4 rounded-lg mb-4 border">
+                    <h4 class="font-bold mb-2">Which methods would you choose?</h4>
+                    <div id="method-options">${optionsHtml}</div>
+                    <button id="reveal-btn" style="background-color: var(--color-primary); color: white; padding: 0.5rem 1rem; border-radius: 4px; border: none; cursor: pointer; margin-top: 1rem;">
+                        Reveal Insights
+                    </button>
+                </div>
+
+                <div id="results-area" style="display: none; border-top: 1px solid #ccc; padding-top: 1rem;">
+                    <h4 class="font-bold mb-2">Requirements Uncovered:</h4>
+                </div>
+            `;
+            container.appendChild(scenarioCard);
+
+            // Interaction Logic
+            document.getElementById('reveal-btn').addEventListener('click', () => {
+                const checkboxes = document.querySelectorAll('#method-options input[name="method"]:checked');
+                const resultsArea = document.getElementById('results-area');
+                resultsArea.innerHTML = '<h4 class="font-bold mb-2">Requirements Uncovered:</h4>';
+                
+                if (checkboxes.length === 0) {
+                    resultsArea.innerHTML += `<p style="color: var(--color-red);">Please select at least one method.</p>`;
+                    resultsArea.style.display = 'block';
+                    return;
+                }
+
+                checkboxes.forEach(cb => {
+                    const method = data.methods.find(m => m.id === cb.value);
+                    if (method) {
+                        const resultItem = document.createElement('div');
+                        resultItem.style.backgroundColor = '#e8f5e9';
+                        resultItem.style.borderLeft = '4px solid var(--color-green)';
+                        resultItem.style.padding = '0.75rem';
+                        resultItem.style.marginBottom = '0.5rem';
+                        resultItem.style.borderRadius = '4px';
+                        resultItem.innerHTML = `<strong style="display: block;">${method.name}:</strong> <span class="text-sm">${method.reason}</span>`;
+                        resultsArea.appendChild(resultItem);
+                    }
+                });
+                resultsArea.style.display = 'block';
+            });
+        }
+
+        // Mobile Menu Toggle
+        function toggleMenu() {
+            document.getElementById('sidebar').classList.toggle('open');
+        }
+
+    </script>
+</body>
+</html>

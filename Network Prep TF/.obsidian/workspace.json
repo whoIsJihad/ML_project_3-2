@@ -1,0 +1,212 @@
+{
+  "main": {
+    "id": "4550a4ae04ea91dd",
+    "type": "split",
+    "children": [
+      {
+        "id": "9175d4933caea1a0",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "c7510798768e74d0",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "STR AI notes/HTTP_from_First_Principles.md",
+                "mode": "preview",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "HTTP_from_First_Principles"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "e684ffcbca0e004e",
+    "type": "split",
+    "children": [
+      {
+        "id": "a69517d733a4b100",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "9cfef941649122be",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
+            }
+          },
+          {
+            "id": "376f9fa8fd80b7e0",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          },
+          {
+            "id": "47f6a76f0f7832e6",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "right": {
+    "id": "b1a9f5406e95f2d5",
+    "type": "split",
+    "children": [
+      {
+        "id": "5351fd5eac123e0e",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "b936311bfb7e9d18",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "STR/CSE321 - IoT Networking.pdf",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks for CSE321 - IoT Networking"
+            }
+          },
+          {
+            "id": "cd614af9a434303d",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "IoT_Networking.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links from IoT_Networking"
+            }
+          },
+          {
+            "id": "0b144b114be10e84",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "386ceafd2a177c69",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-ghost",
+              "title": "all-properties"
+            }
+          },
+          {
+            "id": "9b66a62d5945868c",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "IoT_Networking.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline of IoT_Networking"
+            }
+          }
+        ],
+        "currentTab": 3
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false,
+      "bases:Create new base": false
+    }
+  },
+  "active": "c7510798768e74d0",
+  "lastOpenFiles": [
+    "CSE321 - IoT Networking.pdf",
+    "STR AI notes/DNS.md",
+    "STR AI notes/HTTP_from_First_Principles.md",
+    "STR AI notes/CSE 321 - Application Layer & DHCP.md",
+    "missfont.log",
+    "agreement.pdf",
+    "agreement.md",
+    "Mutual Agreement — May 2026.md",
+    "Mutual Agreement — May 2026 (Professional).pdf",
+    "Mutual Agreement — May 2026 (Professional).md",
+    "Mutual Agreement — May 2026.pdf",
+    "Mutual Agreement — May 2026.log",
+    "Mutual Agreement — May 2026.tex",
+    "CSE 321 - Application Layer & DHCP.md",
+    "CSE 321 - MQTT and IoT Security.md",
+    "STR/CSE321 - More HTTP.pdf",
+    "STR/Unconfirmed 332202.crdownload",
+    "STR/CSE321 - HTTP.pdf",
+    "STR/Unconfirmed 609605.crdownload",
+    "IoT_Networking.md",
+    "IoT_Basics.md"
+  ]
+}

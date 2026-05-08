@@ -1,0 +1,8 @@
+pca is a unsupervised dimensionality  reduction technique
+goal : find a new coordinate system whre the data has maximum varianc 
+resullt: 
+project high dim data onto lower dimensional subspace while preserving info
+example:
+    images (pixel features) -> 2D visualisation
+
+why re

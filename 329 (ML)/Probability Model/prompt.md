@@ -1,0 +1,1 @@
+write similar in depth notes on MAP andMLE , parameter estimation and other relevant stuff.skip fluff and too much regular stuff. no hand wavvy. add why are we learning this in ML course.

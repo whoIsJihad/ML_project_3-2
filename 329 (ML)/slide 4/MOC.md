@@ -1,0 +1,5 @@
+-  [[Sigmoid_and_Hypothesis]]
+- [[Likelihood_and_MLE]]
+- [[Optimization_and_Gradient_Ascent]]
+- [[Logistic Regression Simulation]]
+- [[Perceptron_Comparison]]
